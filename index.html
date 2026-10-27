@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thanakorn C. | Full Stack Developer</title>
+    <meta name="description" content="รับวิเคราะห์ ออกแบบ และพัฒนาระบบภายในองค์กร: วางแผนการผลิต, Inventory, Fixed Asset, Admin Dashboard">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg,#e8edf5 0%,#f4f6fa 50%,#e2e8f0 100%);
+            --ink: #14213d;
+            --muted: #4a5a73;
+            --line: #cbd5e1;
+            --blue: #2547d0;
+            --code-bg: #14213d;
+            --code-ink: #dbe4f0;
+            --amber: #f2a900;
+            --surface: #fff7e0; /* สีแทนขาว: เปลี่ยนตรงนี้จุดเดียว */
+            --ease: cubic-bezier(0.16,1,0.3,1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--ink);
+            font-family: "IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+            line-height: 1.75;
+            font-size: 17px;
+            position: relative
+        }
+
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                background-image: linear-gradient(to right,rgba(37,71,208,.03) 1px,transparent 1px),linear-gradient(to bottom,rgba(37,71,208,.03) 1px,transparent 1px);
+                background-size: 32px 32px;
+                z-index: -1;
+                pointer-events: none
+            }
+
+        a {
+            color: var(--blue);
+            transition: color .2s var(--ease)
+        }
+
+            a:focus-visible {
+                outline: 3px solid var(--amber);
+                outline-offset: 3px
+            }
+
+        .wrap {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px
+        }
+
+        header.top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            animation: fadeIn .8s var(--ease) forwards
+        }
+
+            header.top b {
+                font-weight: 700
+            }
+
+            header.top a {
+                margin-left: 20px;
+                color: var(--ink);
+                text-decoration: none;
+                position: relative
+            }
+
+                header.top a::after {
+                    content: '';
+                    position: absolute;
+                    width: 0;
+                    height: 2px;
+                    bottom: -4px;
+                    left: 0;
+                    background-color: var(--blue);
+                    transition: width .3s var(--ease)
+                }
+
+                header.top a:hover::after {
+                    width: 100%
+                }
+
+                header.top a:hover {
+                    color: var(--blue)
+                }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 48px 0 72px;
+            animation: slideUp .8s var(--ease) forwards
+        }
+
+            .hero h1 {
+                font-size: clamp(2rem,5vw,3.1rem);
+                line-height: 1.25;
+                font-weight: 700
+            }
+
+            .hero p {
+                color: var(--muted);
+                margin: 20px 0 28px;
+                max-width: 34em
+            }
+
+        .btn {
+            display: inline-block;
+            background: var(--blue);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all .25s var(--ease);
+            box-shadow: 0 4px 12px rgba(37,71,208,.15)
+        }
+
+            .btn:hover {
+                background: #1b36a3;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(37,71,208,.25)
+            }
+
+            .btn:active {
+                transform: translateY(0)
+            }
+
+            .btn.ghost {
+                background: color-mix(in srgb,var(--surface) 70%,transparent);
+                color: var(--ink);
+                border: 1.5px solid var(--ink);
+                margin-left: 8px;
+                box-shadow: none
+            }
+
+                .btn.ghost:hover {
+                    background: var(--ink);
+                    color: #fff;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(20,33,61,.2)
+                }
+
+        pre.code {
+            background: var(--code-bg);
+            color: var(--code-ink);
+            border-radius: 10px;
+            padding: 22px 24px;
+            font: 400 14.5px/1.8 "IBM Plex Mono",ui-monospace,monospace;
+            overflow-x: auto;
+            box-shadow: 8px 8px 0 var(--amber);
+            transition: transform .3s var(--ease),box-shadow .3s var(--ease)
+        }
+
+            pre.code:hover {
+                transform: translateY(-4px);
+                box-shadow: 12px 12px 0 var(--amber)
+            }
+
+        .k {
+            color: #8fb0ff
+        }
+
+        .s {
+            color: #f6c453
+        }
+
+        section {
+            padding: 56px 0;
+            border-top: 1px solid var(--line)
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            margin-bottom: 28px
+        }
+
+        .rows {
+            list-style: none;
+            padding: 0
+        }
+
+            .rows li {
+                display: grid;
+                grid-template-columns: 230px 1fr;
+                gap: 24px;
+                padding: 18px 0;
+                border-bottom: 1px solid var(--line);
+                transition: background-color .2s var(--ease)
+            }
+
+                .rows li:hover {
+                    background-color: color-mix(in srgb,var(--surface) 70%,transparent);
+                    padding-left: 8px;
+                    border-radius: 4px
+                }
+
+                .rows li:last-child {
+                    border-bottom: 0
+                }
+
+            .rows strong {
+                font-weight: 700
+            }
+
+            .rows span {
+                color: var(--muted)
+            }
+
+        .projects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+            gap: 24px
+        }
+
+        .project {
+            background: color-mix(in srgb,var(--surface) 90%,transparent);
+            backdrop-filter: blur(4px);
+            border: 1.5px solid var(--ink);
+            border-radius: 8px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            transition: transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)
+        }
+
+            .project:hover {
+                transform: translateY(-5px);
+                box-shadow: 6px 6px 0 var(--amber);
+                background: var(--surface)
+            }
+
+        a.project {
+            color: inherit;
+            text-decoration: none
+        }
+
+            a.project:hover, a.project:focus-visible {
+                box-shadow: 6px 6px 0 var(--amber);
+                transform: translateY(-5px)
+            }
+
+        .project h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px
+        }
+
+        .project p {
+            color: var(--muted);
+            font-size: .95rem;
+            flex: 1
+        }
+
+        .project .tech {
+            font: 400 13px "IBM Plex Mono",monospace;
+            color: var(--blue);
+            margin-top: 14px
+        }
+
+        .timeline {
+            list-style: none;
+            padding: 0 0 0 22px;
+            border-left: 3px solid var(--ink)
+        }
+
+            .timeline li {
+                position: relative;
+                padding-bottom: 28px;
+                transition: transform .2s var(--ease)
+            }
+
+                .timeline li:hover {
+                    transform: translateX(4px)
+                }
+
+                .timeline li:last-child {
+                    padding-bottom: 0
+                }
+
+                .timeline li::before {
+                    content: "";
+                    position: absolute;
+                    left: -30px;
+                    top: 9px;
+                    width: 11px;
+                    height: 11px;
+                    border-radius: 50%;
+                    background: var(--amber);
+                    border: 2px solid var(--ink);
+                    transition: transform .3s var(--ease),background .3s var(--ease)
+                }
+
+                .timeline li:hover::before {
+                    transform: scale(1.4);
+                    background: var(--blue)
+                }
+
+            .timeline b {
+                display: block;
+                font-size: 1.05rem
+            }
+
+            .timeline span {
+                color: var(--muted)
+            }
+
+        footer {
+            padding: 56px 0 72px;
+            border-top: 1px solid var(--line)
+        }
+
+            footer p {
+                color: var(--muted);
+                margin-bottom: 20px
+            }
+
+            footer ul {
+                list-style: none;
+                padding: 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px 28px
+            }
+
+            footer a {
+                text-decoration: none;
+                font-weight: 500
+            }
+
+                footer a:hover {
+                    text-decoration: underline
+                }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @media (max-width:760px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 24px
+            }
+
+            .rows li {
+                grid-template-columns: 1fr;
+                gap: 4px
+            }
+
+            .btn.ghost {
+                margin: 10px 0 0
+            }
+        }
+
+        @media (prefers-reduced-motion:reduce) {
+            html {
+                scroll-behavior: auto
+            }
+
+            *, ::before, ::after {
+                animation: none !important;
+                transition: none !important
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+
+        <header class="top">
+            <b>Thanakorn.c</b>
+            <nav><a href="#services">บริการ</a><a href="#work">ผลงาน</a><a href="#process">ขั้นตอนงาน</a><a href="#about">ประสบการณ์</a><a href="#contact">ติดต่อ</a></nav>
+        </header>
+
+        <main>
+            <div class="hero">
+                <div>
+                    <h1>พัฒนาระบบภายในองค์กร ให้ทำงานได้จริงหน้างาน</h1>
+                    <p>รับครบตั้งแต่วิเคราะห์ ออกแบบ ไปจนถึงพัฒนา เริ่มต้นจากสาย Manufacturing IT ในโรงงาน จึงเข้าใจทั้งฝั่งโค้ดและฝั่งหน้างาน ตั้งแต่ระบบวางแผนการผลิต Inventory ไปจนถึง Admin Dashboard</p>
+                    <a class="btn" href="#contact">คุยเรื่องงาน</a>
+                    <a class="btn ghost" href="#work">ดูผลงาน</a>
+                </div>
+
+<pre class="code" aria-label="สรุปโปรไฟล์เป็นโค้ด"><span class="k">const</span> me = {
+  name: <span class="s">"Thanakorn C."</span>,
+  role: <span class="s">"Full Stack Developer"</span>,
+  services: [<span class="s">"วิเคราะห์"</span>, <span class="s">"ออกแบบ"</span>, <span class="s">"พัฒนา"</span>],
+  freelance: <span class="k">true</span>,
+};</pre>
+            </div>
+
+            <section id="services">
+                <h2>รับทำอะไรบ้าง</h2>
+                <ul class="rows">
+                    <li><strong>วิเคราะห์ความต้องการ</strong><span>คุยกับผู้ใช้งานจริง ทำความเข้าใจขั้นตอนทำงานปัจจุบัน แล้วสรุปเป็นขอบเขตงานที่ชัดเจนก่อนเริ่มเขียนโค้ด</span></li>
+                    <li><strong>ออกแบบระบบ</strong><span>ออกแบบโครงสร้างฐานข้อมูล หน้าจอ และสิทธิ์การใช้งาน ให้ตรงกับงานของหน่วยงาน</span></li>
+                    <li><strong>พัฒนาเว็บแอปและระบบ</strong><span>เขียนระบบทั้งฝั่งหน้าเว็บและฝั่งหลังบ้าน เช่น ระบบวางแผนการผลิต, Inventory, Fixed Asset, Admin Dashboard</span></li>
+                    <li><strong>แก้บั๊กและปรับปรุงระบบเดิม</strong><span>เพิ่มฟีเจอร์ แก้ปัญหา และทำให้ระบบที่มีอยู่ใช้งานคล่องขึ้น</span></li>
+                </ul>
+            </section>
+
+            <section id="work">
+                <h2>ผลงานที่เคยทำ</h2>
+                <div class="projects">
+                    <article class="project">
+                        <h3>ระบบวางแผนการผลิต</h3>
+                        <p>เว็บแอปช่วยวางแผน ติดตามสถานะงานแบบ Real-time และลดขั้นตอนการจัดทำเอกสารในโรงงาน</p>
+                        <div class="tech">Web App</div>
+                    </article>
+                    <article class="project">
+                        <h3>ระบบ Fixed Asset</h3>
+                        <p>เว็บแอปบริหารและคำนวณค่าเสื่อมราคา ทะเบียนทรัพย์สินถาวรขององค์กรอย่างแม่นยำ</p>
+                        <div class="tech">Web App</div>
+                    </article>
+                    <article class="project">
+                        <h3>ระบบ Inventory</h3>
+                        <p>เว็บแอปบริหารสินค้าคงคลัง ติดตามการเข้า-ออก คุมยอดคงเหลือ และแจ้งเตือนสต็อกต่ำ</p>
+                        <div class="tech">Web App</div>
+                    </article>
+                    <a class="project" href="https://webapp.aerothaiunion.com/" target="_blank" rel="noopener">
+                        <h3>Admin Dashboard สหภาพแรงงานรัฐวิสาหกิจ วิทยุการบินแห่งประเทศไทย</h3>
+                        <p>งานฟรีแลนซ์: เว็บแอป Admin Dashboard สำหรับจัดการข้อมูลสมาชิกและสวัสดิการของสหภาพฯ</p>
+                        <div class="tech">Freelance · Web App</div>
+                    </a>
+                </div>
+            </section>
+
+            <section id="process">
+                <h2>ขั้นตอนการทำงานฟรีแลนซ์</h2>
+                <ul class="rows">
+                    <li><strong>1. คุยความต้องการฟรี</strong><span>เล่าปัญหาหรือเป้าหมายระบบที่ต้องการ เพื่อประเมินแนวทางพัฒนาเบื้องต้น</span></li>
+                    <li><strong>2. สรุปขอบเขต & ราคา</strong><span>ตกลง Scope of Work, ระยะเวลา และใบเสนอราคาก่อนเริ่มงาน</span></li>
+                    <li><strong>3. พัฒนา & อัปเดตงาน</strong><span>ส่งความคืบหน้าให้ทดสอบเป็นระยะ ตรวจสอบความถูกต้องได้ตลอด</span></li>
+                    <li><strong>4. ส่งมอบ & รับประกัน</strong><span>ติดตั้งระบบ พร้อมสอนการใช้งาน และมีช่วงดูแลหลังส่งมอบงาน</span></li>
+                </ul>
+            </section>
+
+            <section id="about">
+                <h2>ประสบการณ์ทำงาน</h2>
+                <ol class="timeline">
+                    <li>
+                        <b>Full Stack Developer · บริษัท บางปะอิน เสาเข็มคอนกรีต จำกัด</b>
+                        <span>ปัจจุบัน · พัฒนาเว็บแอปพลิเคชัน และปรับปรุงระบบภายในองค์กรให้ตอบโจทย์หน้างานจริง</span>
+                    </li>
+                    <li>
+                        <b>MIT (Manufacturing IT Engineering) · บริษัท ไทยบริดจสโตน จำกัด</b>
+                        <span>ดูแล พัฒนา และแก้ไขปัญหาระบบ IT สนับสนุนระบบในสายการผลิต เพื่อขับเคลื่อนกระบวนการทำงานในโรงงานให้ราบรื่น</span>
+                    </li>
+                </ol>
+            </section>
+        </main>
+
+        <footer id="contact">
+            <h2>ติดต่อสอบถาม / ประเมินราคา</h2>
+            <p>เล่าสั้นๆ ว่าอยากได้ระบบอะไร หรือมีปัญหาหน้างานอย่างไร ยินดีให้คำปรึกษาและประเมินขอบเขตงานครับ</p>
+            <ul>
+                <li><a href="mailto:thanakorn26443@gmail.com">thanakorn26443@gmail.com</a></li>
+                <li><a href="https://line.me/ti/p/~thanakorn26443" target="_blank" rel="noopener">LINE: @thanakorn26443</a></li>
+                <li><a href="https://github.com/thanakorn26443" target="_blank" rel="noopener">GitHub</a></li>
+            </ul>
+        </footer>
+
+    </div>
+</body>
+</html>
